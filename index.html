@@ -1,1308 +1,431 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en-GB">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500&display=swap"
-    />
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"
-    ></script>
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"
-    ></script>
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"
-    ></script>
-    <title>Wedding Planner</title>
-    <style>
-      :root {
-        --bg: #fbf6ef;
-        --glow: #f6e3d0;
-        --card: #fffdf9;
-        --tx: #3b2f2a;
-        --mut: #9a8a7c;
-        --ac: #b4573a;
-        --acx: #fffaf5;
-        --soft: #f7e9dc;
-        --sage: #7d8f5c;
-        --ln: #eadfd1;
-        --red: #b03a2e;
-        --grn: #6b7f4e;
-        --sh: 0 1px 2px #6b4a3012, 0 6px 18px #6b4a3010;
-        --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-        --sans: "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
-        box-sizing: border-box;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-      }
-      @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-          --bg: #231b17;
-          --glow: #35261e;
-          --card: #2d231f;
-          --tx: #f3e8dc;
-          --mut: #b3a191;
-          --ac: #e08a63;
-          --acx: #231b17;
-          --soft: #3b2d26;
-          --sage: #a3b57f;
-          --ln: #43352e;
-          --red: #ef8a7d;
-          --grn: #a3b57f;
-          --sh: 0 1px 2px #0005, 0 6px 18px #0003;
-        }
-      }
-      :root[data-theme="dark"] {
-        --bg: #231b17;
-        --glow: #35261e;
-        --card: #2d231f;
-        --tx: #f3e8dc;
-        --mut: #b3a191;
-        --ac: #e08a63;
-        --acx: #231b17;
-        --soft: #3b2d26;
-        --sage: #a3b57f;
-        --ln: #43352e;
-        --red: #ef8a7d;
-        --grn: #a3b57f;
-        --sh: 0 1px 2px #0005, 0 6px 18px #0003;
-      }
-      html {
-        scroll-padding-top: env(safe-area-inset-top, 0px);
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        color: var(--tx);
-        font: 400 16px/1.5 var(--sans);
-        background:
-          radial-gradient(120% 55% at 50% 0%, var(--glow), var(--bg) 70%)
-            no-repeat,
-          var(--bg);
-        min-height: 100vh;
-        -webkit-font-smoothing: antialiased;
-      }
-      main {
-        max-width: 640px;
-        margin: 0 auto;
-        padding: 28px 16px 100px;
-      }
-      header {
-        text-align: center;
-        margin-bottom: 22px;
-      }
-      h1 {
-        font: 500 34px/1.1 var(--serif);
-        letter-spacing: 0.01em;
-        margin: 0;
-      }
-      .orn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        color: var(--ac);
-        margin: 8px 0 6px;
-        font-size: 13px;
-      }
-      .orn:before,
-      .orn:after {
-        content: "";
-        height: 1px;
-        width: 48px;
-        background: linear-gradient(90deg, transparent, var(--ac));
-      }
-      .orn:after {
-        transform: scaleX(-1);
-      }
-      .sub {
-        color: var(--mut);
-        font-size: 13px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        margin: 0 0 14px;
-      }
-      header .sub {
-        margin: 0;
-      }
-      .tabs {
-        display: flex;
-        gap: 4px;
-        background: var(--soft);
-        padding: 4px;
-        border-radius: 99px;
-        margin-bottom: 18px;
-      }
-      .tabs button {
-        flex: 1;
-        padding: 9px;
-        border: 0;
-        background: transparent;
-        color: var(--mut);
-        border-radius: 99px;
-        font: 500 15px var(--sans);
-        letter-spacing: 0.04em;
-        transition: all 0.2s;
-      }
-      .tabs button.on {
-        background: var(--card);
-        color: var(--ac);
-        box-shadow: var(--sh);
-      }
-      .row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: var(--card);
-        border: 1px solid var(--ln);
-        border-radius: 16px;
-        padding: 13px 14px;
-        margin-bottom: 10px;
-        box-shadow: var(--sh);
-        transition:
-          transform 0.15s,
-          border-color 0.15s;
-        cursor: pointer;
-      }
-      .row:active {
-        transform: scale(0.99);
-        border-color: var(--ac);
-      }
-      .row .b {
-        flex: 1;
-        min-width: 0;
-      }
-      .row .t {
-        font: 500 20px/1.2 var(--serif);
-        overflow-wrap: anywhere;
-      }
-      .row .m {
-        font-size: 13px;
-        color: var(--mut);
-        margin-top: 2px;
-      }
-      .done {
-        opacity: 0.6;
-      }
-      .done .t {
-        text-decoration: line-through;
-        text-decoration-thickness: 1px;
-      }
-      .over {
-        color: var(--red) !important;
-        font-weight: 500;
-      }
-      input[type="checkbox"] {
-        appearance: none;
-        -webkit-appearance: none;
-        width: 24px;
-        height: 24px;
-        margin: 0;
-        border: 1.5px solid var(--ac);
-        border-radius: 50%;
-        background: transparent;
-        flex: none;
-        display: grid;
-        place-content: center;
-        transition: all 0.2s;
-      }
-      input[type="checkbox"]:checked {
-        background: var(--sage);
-        border-color: var(--sage);
-      }
-      input[type="checkbox"]:checked:after {
-        content: "";
-        width: 6px;
-        height: 11px;
-        border: solid #fff;
-        border-width: 0 2px 2px 0;
-        transform: rotate(45deg) translate(-1px, -1px);
-      }
-      .chips {
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
-        padding: 2px 2px 10px;
-        scrollbar-width: none;
-      }
-      .chips::-webkit-scrollbar {
-        display: none;
-      }
-      .chip {
-        white-space: nowrap;
-        padding: 7px 15px;
-        border: 1px solid var(--ln);
-        border-radius: 99px;
-        background: var(--card);
-        color: var(--mut);
-        font: 400 14px var(--sans);
-        transition: all 0.2s;
-      }
-      .chip.add {
-        border-style: dashed;
-        color: var(--ac);
-        border-color: var(--ac);
-      }
-      .bell {
-        text-decoration: none;
-        font-size: 20px;
-        padding: 6px;
-        flex: none;
-      }
-      .hint {
-        font-size: 13px;
-        color: var(--mut);
-        text-align: center;
-        margin-top: 16px;
-      }
-      .sec {
-        font: 500 24px var(--serif);
-        margin: 22px 0 10px;
-      }
-      .r {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 6px;
-      }
-      .mp {
-        padding: 4px 12px;
-        font-size: 12px;
-        color: var(--ac);
-        border-color: var(--ac);
-      }
-      .amt {
-        font: 500 20px var(--serif);
-        color: var(--ac);
-      }
-      .lg {
-        position: fixed;
-        inset: 0;
-        background: var(--bg);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        z-index: 20;
-      }
-      .so {
-        display: none;
-        font-size: 12px;
-        color: var(--mut);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        margin-top: 6px;
-      }
-      .chip.on {
-        background: var(--ac);
-        color: var(--acx);
-        border-color: var(--ac);
-      }
-      .fab {
-        position: fixed;
-        right: 18px;
-        bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-        background: var(--ac);
-        color: var(--acx);
-        border: 0;
-        border-radius: 99px;
-        padding: 14px 24px;
-        font: 500 16px var(--sans);
-        letter-spacing: 0.04em;
-        box-shadow: 0 8px 24px #b4573a55;
-        transition: transform 0.15s;
-      }
-      .fab:active {
-        transform: scale(0.96);
-      }
-      .btn {
-        padding: 10px 18px;
-        border: 1px solid var(--ln);
-        background: var(--card);
-        color: var(--tx);
-        border-radius: 99px;
-        font: 500 15px var(--sans);
-        transition: all 0.15s;
-      }
-      .btn.p {
-        background: var(--ac);
-        color: var(--acx);
-        border-color: var(--ac);
-      }
-      .btn.d {
-        color: var(--red);
-      }
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-bottom: 16px;
-      }
-      .stat {
-        background: var(--card);
-        border: 1px solid var(--ln);
-        border-radius: 16px;
-        padding: 14px 8px;
-        text-align: center;
-        box-shadow: var(--sh);
-      }
-      .stat b {
-        display: block;
-        font: 500 26px/1.1 var(--serif);
-        color: var(--ac);
-      }
-      .stat span {
-        font-size: 11px;
-        color: var(--mut);
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-      select,
-      input,
-      textarea {
-        font: 400 16px var(--sans);
-        color: var(--tx);
-        background: var(--bg);
-        border: 1px solid var(--ln);
-        border-radius: 12px;
-        padding: 10px 12px;
-        width: 100%;
-        transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
-      }
-      input[type="checkbox"] {
-        width: 24px;
-        padding: 0;
-      }
-      select:focus,
-      input:focus,
-      textarea:focus {
-        outline: 0;
-        border-color: var(--ac);
-        box-shadow: 0 0 0 3px #b4573a22;
-      }
-      .rsvp {
-        width: auto;
-        padding: 7px 10px;
-        border-radius: 99px;
-        background: var(--soft);
-        font-size: 14px;
-      }
-      #modal {
-        position: fixed;
-        inset: 0;
-        background: #3b2f2a66;
-        backdrop-filter: blur(3px);
-        display: none;
-        align-items: flex-end;
-        justify-content: center;
-        z-index: 9;
-      }
-      #modal.show {
-        display: flex;
-      }
-      .sheet {
-        background: var(--card);
-        width: 100%;
-        max-width: 640px;
-        max-height: 90%;
-        overflow: auto;
-        border-radius: 24px 24px 0 0;
-        padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-        animation: up 0.25s ease;
-      }
-      @keyframes up {
-        from {
-          transform: translateY(30px);
-          opacity: 0;
-        }
-        to {
-          transform: none;
-          opacity: 1;
-        }
-      }
-      .sheet h1 {
-        font-size: 28px;
-        margin-bottom: 4px;
-      }
-      .sheet label {
-        display: block;
-        font-size: 12px;
-        color: var(--mut);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        margin: 14px 0 5px;
-      }
-      .acts {
-        display: flex;
-        gap: 8px;
-        margin-top: 22px;
-      }
-      .acts .p {
-        flex: 1;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-      }
-      td,
-      th {
-        padding: 9px 4px;
-        border-bottom: 1px solid var(--ln);
-        text-align: right;
-      }
-      td:first-child,
-      th:first-child {
-        text-align: left;
-      }
-      th {
-        font-weight: 500;
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--mut);
-      }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--ln);
-        border-radius: 16px;
-        padding: 14px;
-        margin-bottom: 14px;
-        overflow-x: auto;
-        box-shadow: var(--sh);
-      }
-      .note {
-        background: var(--soft);
-        border-radius: 16px;
-        padding: 18px;
-        color: var(--mut);
-        font: italic 400 18px var(--serif);
-        text-align: center;
-      }
-      .sub a {
-        color: var(--ac);
-      }
-      #toast {
-        position: fixed;
-        left: 50%;
-        top: calc(10px + env(safe-area-inset-top, 0px));
-        transform: translateX(-50%);
-        background: var(--red);
-        color: #fff;
-        padding: 9px 16px;
-        border-radius: 99px;
-        display: none;
-        z-index: 10;
-        font-size: 14px;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <header>
-        <h1>Our Wedding</h1>
-        <div class="orn">❦</div>
-        <div class="sub" id="count"></div>
-        <a href="#" id="signout" class="so">Sign out</a>
-      </header>
-      <div class="tabs" id="tabs"></div>
-      <div id="view"></div>
-    </main>
-    <button class="fab" id="fab"></button>
-    <div id="modal"><div class="sheet" id="sheet"></div></div>
-    <div id="login" class="lg">
-      <div class="sheet" style="border-radius: 24px; max-width: 360px">
-        <h1>Our Wedding</h1>
-        <div class="orn">❦</div>
-        <label>Email</label
-        ><input id="lem" type="email" autocomplete="username" />
-        <label>Password</label
-        ><input id="lpw" type="password" autocomplete="current-password" />
-        <div class="acts"><button class="btn p" id="lgo">Sign in</button></div>
-        <p id="lerr" class="hint"></p>
-      </div>
-    </div>
-    <div id="toast"></div>
-    <script>
-      const WEDDING = "2027-10-02";
-      const DEFAULT_CATS = [
-        "Venue",
-        "Catering",
-        "Attire",
-        "Photography",
-        "Music",
-        "Flowers",
-        "Stationery",
-        "Travel",
-        "Other",
-      ];
-      const $ = (s) => document.querySelector(s);
-      const esc = (s) =>
-        String(s ?? "").replace(
-          /[&<>"']/g,
-          (c) =>
-            ({
-              "&": "&amp;",
-              "<": "&lt;",
-              ">": "&gt;",
-              '"': "&quot;",
-              "'": "&#39;",
-            })[c],
-        );
-      const gbp = (n) =>
-        "£" +
-        (Number(n) || 0).toLocaleString("en-GB", { maximumFractionDigits: 2 });
-      const st = { tasks: [], guests: [], cats: [], exps: [], cfg: {} };
-      let db = null,
-        tab = "tasks",
-        filter = "all",
-        hideDone = false;
-      const loaded = { cats: false, cfg: false };
-      let seeded = false;
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500&display=swap">
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<title>Wedding Planner</title>
+<style>
+:root{--bg:#fbf6ef;--glow:#f6e3d0;--card:#fffdf9;--tx:#3b2f2a;--mut:#9a8a7c;--ac:#b4573a;--acx:#fffaf5;--soft:#f7e9dc;--sage:#7d8f5c;--ln:#eadfd1;--red:#b03a2e;--grn:#6b7f4e;--sh:0 1px 2px #6b4a3012,0 6px 18px #6b4a3010;--serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;--sans:"Jost",system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#231b17;--glow:#35261e;--card:#2d231f;--tx:#f3e8dc;--mut:#b3a191;--ac:#e08a63;--acx:#231b17;--soft:#3b2d26;--sage:#a3b57f;--ln:#43352e;--red:#ef8a7d;--grn:#a3b57f;--sh:0 1px 2px #0005,0 6px 18px #0003}}
+:root[data-theme="dark"]{--bg:#231b17;--glow:#35261e;--card:#2d231f;--tx:#f3e8dc;--mut:#b3a191;--ac:#e08a63;--acx:#231b17;--soft:#3b2d26;--sage:#a3b57f;--ln:#43352e;--red:#ef8a7d;--grn:#a3b57f;--sh:0 1px 2px #0005,0 6px 18px #0003}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--tx);font:400 16px/1.5 var(--sans);background:radial-gradient(120% 55% at 50% 0%,var(--glow),var(--bg) 70%) no-repeat,var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased}
+main{max-width:640px;margin:0 auto;padding:28px 16px 100px}
+header{text-align:center;margin-bottom:22px}
+h1{font:500 34px/1.1 var(--serif);letter-spacing:.01em;margin:0}
+.orn{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--ac);margin:8px 0 6px;font-size:13px}
+.orn:before,.orn:after{content:"";height:1px;width:48px;background:linear-gradient(90deg,transparent,var(--ac))}
+.orn:after{transform:scaleX(-1)}
+.sub{color:var(--mut);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 14px}
+header .sub{margin:0}
+.tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:99px;margin-bottom:18px}
+.tabs button{flex:1;padding:9px;border:0;background:transparent;color:var(--mut);border-radius:99px;font:500 15px var(--sans);letter-spacing:.04em;transition:all .2s}
+.tabs button.on{background:var(--card);color:var(--ac);box-shadow:var(--sh)}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--sh);transition:transform .15s,border-color .15s;cursor:pointer}
+.row:active{transform:scale(.99);border-color:var(--ac)}
+.row .b{flex:1;min-width:0}
+.row .t{font:500 20px/1.2 var(--serif);overflow-wrap:anywhere}
+.row .m{font-size:13px;color:var(--mut);margin-top:2px}
+.done{opacity:.6}.done .t{text-decoration:line-through;text-decoration-thickness:1px}
+.over{color:var(--red)!important;font-weight:500}
+input[type=checkbox]{appearance:none;-webkit-appearance:none;width:24px;height:24px;margin:0;border:1.5px solid var(--ac);border-radius:50%;background:transparent;flex:none;display:grid;place-content:center;transition:all .2s}
+input[type=checkbox]:checked{background:var(--sage);border-color:var(--sage)}
+input[type=checkbox]:checked:after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:7px 15px;border:1px solid var(--ln);border-radius:99px;background:var(--card);color:var(--mut);font:400 14px var(--sans);transition:all .2s}
+.chip.add{border-style:dashed;color:var(--ac);border-color:var(--ac)}
+.bell{text-decoration:none;font-size:20px;padding:6px;flex:none}
+.hint{font-size:13px;color:var(--mut);text-align:center;margin-top:16px}
+.sec{font:500 24px var(--serif);margin:22px 0 10px}
+.r{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.mp{padding:4px 12px;font-size:12px;color:var(--ac);border-color:var(--ac)}
+.amt{font:500 20px var(--serif);color:var(--ac)}
+.lg{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.so{display:none;font-size:12px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
+.grip{color:var(--mut);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;padding:8px 2px 8px 0;flex:none;display:flex}
+.row.drag{box-shadow:0 14px 32px #0005;transform:scale(1.02);border-color:var(--ac);position:relative;z-index:2}
+.badge{display:inline-block;font:500 10px var(--sans);letter-spacing:.1em;text-transform:uppercase;background:var(--soft);color:var(--ac);padding:3px 9px;border-radius:99px;margin-left:8px;vertical-align:middle}
+.chip.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+.fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ac);color:var(--acx);border:0;border-radius:99px;padding:14px 24px;font:500 16px var(--sans);letter-spacing:.04em;box-shadow:0 8px 24px #b4573a55;transition:transform .15s}
+.fab:active{transform:scale(.96)}
+.btn{padding:10px 18px;border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:99px;font:500 15px var(--sans);transition:all .15s}
+.btn.p{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+.btn.d{color:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:14px 8px;text-align:center;box-shadow:var(--sh)}
+.stat b{display:block;font:500 26px/1.1 var(--serif);color:var(--ac)}
+.stat span{font-size:11px;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
+select,input,textarea{font:400 16px var(--sans);color:var(--tx);background:var(--bg);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;width:100%;transition:border-color .15s,box-shadow .15s}
+input[type=checkbox]{width:24px;padding:0}
+select:focus,input:focus,textarea:focus{outline:0;border-color:var(--ac);box-shadow:0 0 0 3px #b4573a22}
+.rsvp{width:auto;padding:7px 10px;border-radius:99px;background:var(--soft);font-size:14px}
+#modal{position:fixed;inset:0;background:#3b2f2a66;backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:9}
+#modal.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:640px;max-height:90%;overflow:auto;border-radius:24px 24px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px));animation:up .25s ease}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.sheet h1{font-size:28px;margin-bottom:4px}
+.sheet label{display:block;font-size:12px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;margin:14px 0 5px}
+.acts{display:flex;gap:8px;margin-top:22px}.acts .p{flex:1}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:9px 4px;border-bottom:1px solid var(--ln);text-align:right}td:first-child,th:first-child{text-align:left}
+th{font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:14px;margin-bottom:14px;overflow-x:auto;box-shadow:var(--sh)}
+.note{background:var(--soft);border-radius:16px;padding:18px;color:var(--mut);font:italic 400 18px var(--serif);text-align:center}
+.sub a{color:var(--ac)}
+#toast{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--red);color:#fff;padding:9px 16px;border-radius:99px;display:none;z-index:10;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+  <header><h1>Our Wedding</h1><div class="orn">❦</div><div class="sub" id="count"></div><a href="#" id="signout" class="so">Sign out</a></header>
+  <div class="tabs" id="tabs"></div>
+  <div id="view"></div>
+</main>
+<button class="fab" id="fab"></button>
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+<div id="login" class="lg"><div class="sheet" style="border-radius:24px;max-width:360px">
+  <h1>Our Wedding</h1><div class="orn">❦</div>
+  <label>Email</label><input id="lem" type="email" autocomplete="username">
+  <label>Password</label><input id="lpw" type="password" autocomplete="current-password">
+  <div class="acts"><button class="btn p" id="lgo">Sign in</button></div><p id="lerr" class="hint"></p></div></div>
+<div id="toast"></div>
+<script>
+const WEDDING = '2027-10-02';
+const DEFAULT_CATS = ['Venue','Catering','Attire','Photography','Music','Flowers','Stationery','Travel','Other'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gbp = n => '£' + (Number(n)||0).toLocaleString('en-GB', {maximumFractionDigits:2});
+const st = {tasks:[], guests:[], cats:[], exps:[], cfg:{}};
+let db = null, tab = 'tasks', filter = 'all', gfilter = 'all', hideDone = false, drag = null, pendingRender = false;
+const loaded = {cats:false, cfg:false};
+let seeded = false;
 
-      function toast(m) {
-        const t = $("#toast");
-        t.textContent = m;
-        t.style.display = "block";
-        setTimeout(() => (t.style.display = "none"), 3500);
-      }
-      async function save(col, id, data) {
-        if (!db) {
-          toast("Not connected: changes are not being saved");
-          return;
-        }
-        try {
-          id
-            ? await db.doc(col + "/" + id).set(data)
-            : await db.collection(col).add(data);
-        } catch (e) {
-          toast(
-            e && e.code === "permission-denied"
-              ? "This account is not allowed to save"
-              : "Save failed",
-          );
-        }
-      }
-      async function remove(col, id) {
-        if (!db) return;
-        try {
-          await db.doc(col + "/" + id).delete();
-        } catch (e) {
-          toast("Delete failed");
-        }
-      }
-      function sub(col, key) {
-        unsubs.push(
-          db.collection(col).onSnapshot(
-            (s) => {
-              st[key] = s.docs.map((d) => ({ id: d.id, ...d.data() }));
-              if (key === "cats" && !s.metadata.fromCache) {
-                loaded.cats = true;
-                maybeSeed();
-              }
-              render();
-            },
-            () => toast("Sync problem"),
-          ),
-        );
-      }
-      function maybeSeed() {
-        if (seeded || !loaded.cats || !loaded.cfg) return;
-        if (st.cats.length === 0 && !st.cfg.seeded) {
-          seeded = true;
-          DEFAULT_CATS.forEach((n, i) =>
-            save("categories", "c" + i, { name: n }),
-          );
-          save("settings", "main", { ...st.cfg, seeded: true });
-        }
-      }
-      const firebaseConfig = {
-        apiKey: "AIzaSyBtGucs0GdY_AtjrQJFruUWF3rilDyyyLw",
-        authDomain: "weddingplannerrodmell.firebaseapp.com",
-        projectId: "weddingplannerrodmell",
-        storageBucket: "weddingplannerrodmell.firebasestorage.app",
-        messagingSenderId: "976090623670",
-        appId: "1:976090623670:web:4a19af2d31e485d5b54017",
-      };
-      let unsubs = [];
-      function connect() {
-        if (firebaseConfig.apiKey.startsWith("PASTE")) {
-          $("#view").innerHTML =
-            '<div class="note">Add your Firebase settings at the top of this file. See SETUP.md.</div>';
-          return;
-        }
-        if (typeof firebase === "undefined") {
-          $("#view").innerHTML =
-            '<div class="note">Could not load Firebase. Check your connection and reload.</div>';
-          return;
-        }
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        db = firebase.firestore();
-        const go = () => {
-          $("#lerr").textContent = "";
-          auth
-            .signInWithEmailAndPassword($("#lem").value.trim(), $("#lpw").value)
-            .catch(
-              () =>
-                ($("#lerr").textContent =
-                  "Could not sign in. Check your email and password."),
-            );
-        };
-        $("#lgo").onclick = go;
-        $("#lpw").onkeydown = (e) => {
-          if (e.key === "Enter") go();
-        };
-        $("#signout").onclick = (e) => {
-          e.preventDefault();
-          auth.signOut();
-        };
-        auth.onAuthStateChanged((u) => {
-          unsubs.forEach((f) => f());
-          unsubs = [];
-          loaded.cats = false;
-          loaded.cfg = false;
-          seeded = false;
-          if (!u) {
-            st.tasks = [];
-            st.guests = [];
-            st.cats = [];
-            st.exps = [];
-            st.cfg = {};
-            $("#login").style.display = "flex";
-            $("#signout").style.display = "none";
-            render();
-            return;
-          }
-          $("#login").style.display = "none";
-          $("#signout").style.display = "inline-block";
-          sub("tasks", "tasks");
-          sub("guests", "guests");
-          sub("categories", "cats");
-          sub("expenses", "exps");
-          unsubs.push(
-            db.doc("settings/main").onSnapshot(
-              (s) => {
-                st.cfg = s.exists ? s.data() : {};
-                if (!s.metadata.fromCache) {
-                  loaded.cfg = true;
-                  maybeSeed();
-                }
-                render();
-              },
-              () => toast("Sync problem"),
-            ),
-          );
-        });
-      }
+function toast(m){ const t=$('#toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3500); }
+async function save(col, id, data){
+  if(!db){ toast('Not connected: changes are not being saved'); return; }
+  try{ id ? await db.doc(col+'/'+id).set(data) : await db.collection(col).add(data); }
+  catch(e){ toast(e && e.code === 'permission-denied' ? 'This account is not allowed to save' : 'Save failed'); }
+}
+async function remove(col, id){
+  if(!db) return;
+  try{ await db.doc(col+'/'+id).delete(); }catch(e){ toast('Delete failed'); }
+}
+function sub(col, key){
+  unsubs.push(db.collection(col).onSnapshot(s => {
+    st[key] = s.docs.map(d => ({id:d.id, ...d.data()}));
+    if(key==='cats' && !s.metadata.fromCache){ loaded.cats = true; maybeSeed(); }
+    render();
+  }, () => toast('Sync problem')));
+}
+function maybeSeed(){
+  if(seeded || !loaded.cats || !loaded.cfg) return;
+  if(st.cats.length === 0 && !st.cfg.seeded){
+    seeded = true;
+    DEFAULT_CATS.forEach((n,i) => save('categories', 'c'+i, {name:n}));
+    save('settings', 'main', {...st.cfg, seeded:true});
+  }
+}
+const firebaseConfig = {
+  apiKey: "AIzaSyBtGucs0GdY_AtjrQJFruUWF3rilDyyyLw",
+  authDomain: "weddingplannerrodmell.firebaseapp.com",
+  projectId: "weddingplannerrodmell",
+  storageBucket: "weddingplannerrodmell.firebasestorage.app",
+  messagingSenderId: "976090623670",
+  appId: "1:976090623670:web:4a19af2d31e485d5b54017"
+};
+let unsubs = [];
+function connect(){
+  if(firebaseConfig.apiKey.startsWith('PASTE')){ $('#view').innerHTML = '<div class="note">Add your Firebase settings at the top of this file. See SETUP.md.</div>'; return; }
+  if(typeof firebase === 'undefined'){ $('#view').innerHTML = '<div class="note">Could not load Firebase. Check your connection and reload.</div>'; return; }
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth(); db = firebase.firestore();
+  const go = () => { $('#lerr').textContent = ''; auth.signInWithEmailAndPassword($('#lem').value.trim(), $('#lpw').value).catch(() => $('#lerr').textContent = 'Could not sign in. Check your email and password.'); };
+  $('#lgo').onclick = go;
+  $('#lpw').onkeydown = e => { if(e.key === 'Enter') go(); };
+  $('#signout').onclick = e => { e.preventDefault(); auth.signOut(); };
+  auth.onAuthStateChanged(u => {
+    unsubs.forEach(f => f()); unsubs = []; loaded.cats = false; loaded.cfg = false; seeded = false;
+    if(!u){
+      st.tasks = []; st.guests = []; st.cats = []; st.exps = []; st.cfg = {};
+      $('#login').style.display = 'flex'; $('#signout').style.display = 'none'; render(); return;
+    }
+    $('#login').style.display = 'none'; $('#signout').style.display = 'inline-block';
+    sub('tasks','tasks'); sub('guests','guests'); sub('categories','cats'); sub('expenses','exps');
+    unsubs.push(db.doc('settings/main').onSnapshot(s => {
+      st.cfg = s.exists ? s.data() : {};
+      if(!s.metadata.fromCache){ loaded.cfg = true; maybeSeed(); }
+      render();
+    }, () => toast('Sync problem')));
+  });
+}
 
-      const catName = (id) =>
-        (st.cats.find((c) => c.id === id) || {}).name || "Uncategorised";
-      const today = () => new Date().toISOString().slice(0, 10);
+const catName = id => (st.cats.find(c => c.id === id) || {}).name || 'Uncategorised';
+const today = () => new Date().toISOString().slice(0,10);
 
-      function render() {
-        const days = Math.ceil((new Date(WEDDING) - new Date(today())) / 864e5);
-        $("#count").textContent =
-          days > 0
-            ? days + " days to go · 2nd October 2027"
-            : days === 0
-              ? "Today is the day!"
-              : "2nd October 2027";
-        $("#tabs").innerHTML = [
-          ["tasks", "Tasks"],
-          ["guests", "Guests"],
-          ["budget", "Budget"],
-        ]
-          .map(
-            ([k, l]) =>
-              `<button class="${tab === k ? "on" : ""}" data-tab="${k}">${l}</button>`,
-          )
-          .join("");
-        $("#fab").textContent =
-          tab === "tasks" ? "+ Task" : tab === "guests" ? "+ Guest" : "+ Cost";
-        if (
-          catOpen &&
-          catModal.redraw &&
-          !(
-            document.activeElement &&
-            document.activeElement.dataset.cr !== undefined
-          )
-        )
-          catModal.redraw();
-        $("#view").innerHTML =
-          tab === "tasks"
-            ? tasksView()
-            : tab === "guests"
-              ? guestsView()
-              : budgetView();
-      }
+function render(){
+  if(drag){ pendingRender = true; return; }
+  const days = Math.ceil((new Date(WEDDING) - new Date(today())) / 864e5);
+  $('#count').textContent = days > 0 ? days + ' days to go · 2nd October 2027' : days === 0 ? 'Today is the day!' : '2nd October 2027';
+  $('#tabs').innerHTML = [['tasks','Tasks'],['guests','Guests'],['budget','Budget']]
+    .map(([k,l]) => `<button class="${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('');
+  $('#fab').textContent = tab==='tasks' ? '+ Task' : tab==='guests' ? '+ Guest' : '+ Cost';
+  if(catOpen && catModal.redraw && !(document.activeElement && document.activeElement.dataset.cr !== undefined)) catModal.redraw();
+  $('#view').innerHTML = tab==='tasks' ? tasksView() : tab==='guests' ? guestsView() : budgetView();
+}
 
-      const p2 = (n) => String(n).padStart(2, "0");
-      const stamp = (d) =>
-        d.getFullYear() +
-        p2(d.getMonth() + 1) +
-        p2(d.getDate()) +
-        "T" +
-        p2(d.getHours()) +
-        p2(d.getMinutes()) +
-        "00";
-      function remindAt(t) {
-        if (t.rcustom) {
-          const d = new Date(t.rcustom);
-          return isNaN(d) ? null : d;
-        }
-        if (!t.due) return null;
-        const days =
-          parseInt(
-            t.rdays !== undefined && t.rdays !== ""
-              ? t.rdays
-              : (st.cfg.rdays ?? 1),
-          ) || 0;
-        const [h, m] = (t.rtime || st.cfg.rtime || "09:00")
-          .split(":")
-          .map(Number);
-        const [y, mo, d] = t.due.split("-").map(Number);
-        return new Date(y, mo - 1, d - days, h || 0, m || 0);
-      }
-      function calLink(t) {
-        const at = remindAt(t);
-        if (!at) return "";
-        const end = new Date(at.getTime() + 15 * 60000);
-        const det = [
-          "Wedding task" + (t.due ? " due " + t.due : ""),
-          catName(t.cat),
-          t.notes,
-        ]
-          .filter(Boolean)
-          .join("\n");
-        return (
-          "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" +
-          encodeURIComponent("Wedding: " + t.title) +
-          "&dates=" +
-          stamp(at) +
-          "/" +
-          stamp(end) +
-          "&details=" +
-          encodeURIComponent(det)
-        );
-      }
-      const bell = (t) => {
-        const u = !t.done && calLink(t);
-        return u
-          ? `<a class="bell" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Add reminder to Google Calendar">🔔</a>`
-          : "";
-      };
+const p2 = n => String(n).padStart(2,'0');
+const stamp = d => d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'T'+p2(d.getHours())+p2(d.getMinutes())+'00';
+function remindAt(t){
+  if(t.rcustom){ const d = new Date(t.rcustom); return isNaN(d) ? null : d; }
+  if(!t.due) return null;
+  const days = parseInt(t.rdays !== undefined && t.rdays !== '' ? t.rdays : (st.cfg.rdays ?? 1)) || 0;
+  const [h,m] = (t.rtime || st.cfg.rtime || '09:00').split(':').map(Number);
+  const [y,mo,d] = t.due.split('-').map(Number);
+  return new Date(y, mo-1, d-days, h||0, m||0);
+}
+function calLink(t){
+  const at = remindAt(t); if(!at) return '';
+  const end = new Date(at.getTime() + 15*60000);
+  const det = ['Wedding task' + (t.due ? ' due ' + t.due : ''), catName(t.cat), t.notes].filter(Boolean).join('\n');
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent('Wedding: ' + t.title)
+    + '&dates=' + stamp(at) + '/' + stamp(end) + '&details=' + encodeURIComponent(det);
+}
+const bell = t => { const u = !t.done && calLink(t); return u ? `<a class="bell" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Add reminder to Google Calendar">🔔</a>` : ''; };
 
-      function tasksView() {
-        const chips =
-          [["all", "All"], ...st.cats.map((c) => [c.id, c.name])]
-            .map(
-              ([k, l]) =>
-                `<button class="chip ${filter === k ? "on" : ""}" data-filter="${esc(k)}">${esc(l)}</button>`,
-            )
-            .join("") +
-          `<button class="chip add" data-cats>＋ Category</button>`;
-        let list = st.tasks.filter(
-          (t) =>
-            (filter === "all" || t.cat === filter) && !(hideDone && t.done),
-        );
-        list.sort(
-          (a, b) =>
-            (a.done ? 1 : 0) - (b.done ? 1 : 0) ||
-            (a.due || "9999").localeCompare(b.due || "9999"),
-        );
-        const rows =
-          list
-            .map((t) => {
-              const over = !t.done && t.due && t.due < today();
-              return `<div class="row ${t.done ? "done" : ""}" data-edit="${esc(t.id)}">
-      <input type="checkbox" data-toggle="${esc(t.id)}" ${t.done ? "checked" : ""}>
-      <div class="b"><div class="t">${esc(t.title)}</div>
-      <div class="m"><span class="${over ? "over" : ""}">${t.due ? esc(t.due) : "No date"}</span> · ${esc(catName(t.cat))}${taskCost(t)}</div>
-      ${t.notes ? `<div class="m">${esc(t.notes)}</div>` : ""}</div>${bell(t)}</div>`;
-            })
-            .join("") ||
-          '<div class="note">No tasks yet. Tap + Task to add one.</div>';
-        const open = st.tasks.filter((t) => !t.done).length;
-        return `<div class="chips">${chips}</div>
-    <div class="sub">${open} open · ${st.tasks.length - open} done · <a href="#" data-hide>${hideDone ? "show" : "hide"} done</a></div>${rows}${st.tasks.length ? '<p class="hint">Tap 🔔 on a task to add its reminder to Google Calendar. Set the timing when you edit a task.</p>' : ""}`;
-      }
+const effOrder = t => t.order ?? (t.due ? new Date(t.due).getTime() - 4e12 : -1e12);
+const byOrder = (a,b) => effOrder(a) - effOrder(b) || String(a.id).localeCompare(String(b.id));
+const GRIP = '<svg width="16" height="22" viewBox="0 0 16 22" aria-hidden="true"><g fill="currentColor"><circle cx="5" cy="4" r="1.8"/><circle cx="11" cy="4" r="1.8"/><circle cx="5" cy="11" r="1.8"/><circle cx="11" cy="11" r="1.8"/><circle cx="5" cy="18" r="1.8"/><circle cx="11" cy="18" r="1.8"/></g></svg>';
 
-      function guestsView() {
-        const by = (s) => st.guests.filter((g) => (g.rsvp || "pending") === s);
-        const head = by("yes").reduce((a, g) => a + (Number(g.size) || 1), 0);
-        const rows =
-          [...st.guests]
-            .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
-            .map(
-              (g) => `
-    <div class="row" data-gedit="${esc(g.id)}"><div class="b"><div class="t">${esc(g.name)}${(g.size || 1) > 1 ? " (+" + (g.size - 1) + ")" : ""}</div>
-    <div class="m">${esc(g.notes || "")}</div></div>
-    <select class="rsvp" data-rsvp="${esc(g.id)}">${["pending", "yes", "no"].map((s) => `<option value="${s}" ${(g.rsvp || "pending") === s ? "selected" : ""}>${s}</option>`).join("")}</select></div>`,
-            )
-            .join("") ||
-          '<div class="note">No guests yet. Tap + Guest to add one.</div>';
-        return `<div class="stats"><div class="stat"><b>${head}</b><span>attending</span></div>
-    <div class="stat"><b>${by("pending").length}</b><span>awaiting reply</span></div>
-    <div class="stat"><b>${by("no").length}</b><span>declined</span></div></div>${rows}`;
-      }
+function taskRow(t){
+  const over = !t.done && t.due && t.due < today();
+  return `<div class="row ${t.done?'done':''}" data-edit="${esc(t.id)}">
+    ${t.done ? '' : `<span class="grip" aria-label="Drag to reorder">${GRIP}</span>`}
+    <input type="checkbox" data-toggle="${esc(t.id)}" ${t.done?'checked':''}>
+    <div class="b"><div class="t">${esc(t.title)}</div>
+    <div class="m"><span class="${over?'over':''}">${t.due?esc(t.due):'No date'}</span> · ${esc(catName(t.cat))}${taskCost(t)}</div>
+    ${t.notes?`<div class="m">${esc(t.notes)}</div>`:''}</div>${bell(t)}</div>`;
+}
 
-      const isPaid = (x) => (x.status || "paid") === "paid";
-      const xDate = (x) =>
-        isPaid(x) ? x.paidOn || x.due || x.date || "" : x.due || x.date || "";
-      const isOver = (x) => !isPaid(x) && xDate(x) && xDate(x) < today();
-      const amt = (x) => Number(x.amount) || 0;
-      const sumX = (list) => list.reduce((a, x) => a + amt(x), 0);
+function tasksView(){
+  const chips = [['all','All'], ...st.cats.map(c => [c.id, c.name])]
+    .map(([k,l]) => `<button class="chip ${filter===k?'on':''}" data-filter="${esc(k)}">${esc(l)}</button>`).join('')
+    + `<button class="chip add" data-cats>＋ Category</button>`;
+  const vis = st.tasks.filter(t => (filter==='all' || t.cat===filter) && !(hideDone && t.done));
+  const openL = vis.filter(t => !t.done).sort(byOrder), doneL = vis.filter(t => t.done).sort(byOrder);
+  const rows = vis.length ? `<div id="olist">${openL.map(taskRow).join('')}</div>${doneL.map(taskRow).join('')}`
+    : '<div class="note">No tasks yet. Tap + Task to add one.</div>';
+  const open = st.tasks.filter(t=>!t.done).length;
+  return `<div class="chips">${chips}</div>
+    <div class="sub">${open} open · ${st.tasks.length-open} done · <a href="#" data-hide>${hideDone?'show':'hide'} done</a> · <a href="#" data-sortdate>sort by date</a></div>${rows}${st.tasks.length?'<p class="hint">Drag the handle on the left of a task to reorder. Tap 🔔 to add a reminder to Google Calendar. Set its timing when you edit a task.</p>':''}`;
+}
 
-      function taskCost(t) {
-        const mine = st.exps.filter((x) => x.taskId === t.id),
-          paid = sumX(mine.filter(isPaid)),
-          due = sumX(mine.filter((x) => !isPaid(x)));
-        const parts = [];
-        if (paid) parts.push(gbp(paid) + " paid");
-        if (due) parts.push(gbp(due) + " to pay");
-        if (!parts.length && Number(t.est)) parts.push(gbp(t.est) + " est");
-        return parts.length ? " · " + parts.join(" · ") : "";
-      }
+function commitOrder(ids){
+  const all = st.tasks.filter(t => !t.done).sort(byOrder), base = {};
+  all.forEach((t,i) => base[t.id] = (i+1)*1000);
+  const slots = ids.map(id => base[id]).sort((a,b) => a-b), next = {...base};
+  ids.forEach((id,i) => next[id] = slots[i]);
+  all.forEach(t => { if(t.order !== next[t.id]){ const {id, ...rest} = t; save('tasks', id, {...rest, order: next[t.id]}); } });
+}
 
-      function xrow(x) {
-        const tk = st.tasks.find((t) => t.id === x.taskId),
-          paid = isPaid(x),
-          d = xDate(x);
-        return `<div class="row" data-xedit="${esc(x.id)}"><div class="b"><div class="t">${esc(x.desc)}</div>
-    <div class="m"><span class="${isOver(x) ? "over" : ""}">${paid ? "Paid " : "Due "}${esc(d || "(no date)")}</span> · ${esc(catName(x.cat))}${tk ? " · " + esc(tk.title) : ""}</div></div>
-    <div class="r"><div class="amt">${gbp(x.amount)}</div>${paid ? "" : `<button class="btn mp" data-paid="${esc(x.id)}">Mark paid</button>`}</div></div>`;
-      }
+function guestsView(){
+  const by = s => st.guests.filter(g => (g.rsvp||'pending')===s), sz = g => Number(g.size)||1;
+  const att = by('yes'), head = att.reduce((a,g) => a + sz(g), 0), eve = att.filter(g => g.invite === 'evening').reduce((a,g) => a + sz(g), 0);
+  const chips = [['all','All'],['day','Day and evening'],['evening','Evening only']]
+    .map(([k,l]) => `<button class="chip ${gfilter===k?'on':''}" data-gfilter="${k}">${l}</button>`).join('');
+  const list = st.guests.filter(g => gfilter==='all' || (gfilter==='evening') === (g.invite === 'evening'));
+  const rows = list.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(g => `
+    <div class="row" data-gedit="${esc(g.id)}"><div class="b"><div class="t">${esc(g.name)}${(g.size||1)>1?' (+'+((g.size)-1)+')':''}${g.invite==='evening'?'<span class="badge">Evening</span>':''}</div>
+    <div class="m">${esc(g.notes||'')}</div></div>
+    <select class="rsvp" data-rsvp="${esc(g.id)}">${['pending','yes','no'].map(s=>`<option value="${s}" ${(g.rsvp||'pending')===s?'selected':''}>${s}</option>`).join('')}</select></div>`).join('')
+    || '<div class="note">No guests here yet. Tap + Guest to add one.</div>';
+  return `<div class="stats"><div class="stat"><b>${head}</b><span>attending</span></div>
+    <div class="stat"><b>${by('pending').length}</b><span>awaiting reply</span></div>
+    <div class="stat"><b>${by('no').length}</b><span>declined</span></div></div>
+    <div class="sub">Attending: ${head-eve} day · ${eve} evening only</div>
+    <div class="chips">${chips}</div>${rows}`;
+}
 
-      function budgetView() {
-        const num = (v) => Number(v) || 0,
-          ex = st.exps;
-        const est = st.tasks.reduce((a, t) => a + num(t.est), 0),
-          tot = num(st.cfg.budget);
-        const paid = sumX(ex.filter(isPaid)),
-          due = sumX(ex.filter((x) => !isPaid(x))),
-          over = sumX(ex.filter(isOver)),
-          com = paid + due;
-        const rows = [...st.cats.map((c) => c.id), ""]
-          .map((id) => {
-            const inCat = (c) =>
-              id ? c === id : !st.cats.some((k) => k.id === c);
-            const e = st.tasks
-              .filter((t) => inCat(t.cat))
-              .reduce((a, t) => a + num(t.est), 0);
-            const mine = ex.filter((x) => inCat(x.cat)),
-              p = sumX(mine.filter(isPaid)),
-              d = sumX(mine.filter((x) => !isPaid(x)));
-            return e || p || d
-              ? `<tr><td>${esc(id ? catName(id) : "Uncategorised")}</td><td>${gbp(e)}</td><td>${gbp(p)}</td><td>${gbp(d)}</td></tr>`
-              : "";
-          })
-          .join("");
-        const toPay = ex
-          .filter((x) => !isPaid(x))
-          .sort((a, b) =>
-            (xDate(a) || "9999").localeCompare(xDate(b) || "9999"),
-          )
-          .map(xrow)
-          .join("");
-        const done = ex
-          .filter(isPaid)
-          .sort((a, b) => xDate(b).localeCompare(xDate(a)))
-          .map(xrow)
-          .join("");
-        const none = '<div class="note">Nothing here yet.</div>';
-        return `<div class="stats"><div class="stat"><b>${gbp(tot)}</b><span>total budget</span></div>
+const isPaid = x => (x.status || 'paid') === 'paid';
+const xDate = x => isPaid(x) ? (x.paidOn || x.due || x.date || '') : (x.due || x.date || '');
+const isOver = x => !isPaid(x) && xDate(x) && xDate(x) < today();
+const amt = x => Number(x.amount) || 0;
+const sumX = list => list.reduce((a,x) => a + amt(x), 0);
+
+function taskCost(t){
+  const mine = st.exps.filter(x => x.taskId === t.id), paid = sumX(mine.filter(isPaid)), due = sumX(mine.filter(x => !isPaid(x)));
+  const parts = [];
+  if(paid) parts.push(gbp(paid) + ' paid');
+  if(due) parts.push(gbp(due) + ' to pay');
+  if(!parts.length && Number(t.est)) parts.push(gbp(t.est) + ' est');
+  return parts.length ? ' · ' + parts.join(' · ') : '';
+}
+
+function xrow(x){
+  const tk = st.tasks.find(t => t.id === x.taskId), paid = isPaid(x), d = xDate(x);
+  return `<div class="row" data-xedit="${esc(x.id)}"><div class="b"><div class="t">${esc(x.desc)}</div>
+    <div class="m"><span class="${isOver(x)?'over':''}">${paid?'Paid ':'Due '}${esc(d||'(no date)')}</span> · ${esc(catName(x.cat))}${tk?' · '+esc(tk.title):''}</div></div>
+    <div class="r"><div class="amt">${gbp(x.amount)}</div>${paid?'':`<button class="btn mp" data-paid="${esc(x.id)}">Mark paid</button>`}</div></div>`;
+}
+
+function budgetView(){
+  const num = v => Number(v)||0, ex = st.exps;
+  const est = st.tasks.reduce((a,t)=>a+num(t.est),0), tot = num(st.cfg.budget);
+  const paid = sumX(ex.filter(isPaid)), due = sumX(ex.filter(x=>!isPaid(x))), over = sumX(ex.filter(isOver)), com = paid + due;
+  const rows = [...st.cats.map(c=>c.id), ''].map(id => {
+    const inCat = c => id ? c===id : !st.cats.some(k=>k.id===c);
+    const e = st.tasks.filter(t=>inCat(t.cat)).reduce((a,t)=>a+num(t.est),0);
+    const mine = ex.filter(x=>inCat(x.cat)), p = sumX(mine.filter(isPaid)), d = sumX(mine.filter(x=>!isPaid(x)));
+    return e||p||d ? `<tr><td>${esc(id?catName(id):'Uncategorised')}</td><td>${gbp(e)}</td><td>${gbp(p)}</td><td>${gbp(d)}</td></tr>` : '';
+  }).join('');
+  const toPay = ex.filter(x=>!isPaid(x)).sort((a,b)=>(xDate(a)||'9999').localeCompare(xDate(b)||'9999')).map(xrow).join('');
+  const done = ex.filter(isPaid).sort((a,b)=>xDate(b).localeCompare(xDate(a))).map(xrow).join('');
+  const none = '<div class="note">Nothing here yet.</div>';
+  return `<div class="stats"><div class="stat"><b>${gbp(tot)}</b><span>total budget</span></div>
     <div class="stat"><b>${gbp(com)}</b><span>committed</span></div>
-    <div class="stat"><b class="${tot && tot - com < 0 ? "over" : ""}">${gbp(tot - com)}</b><span>left to commit</span></div></div>
+    <div class="stat"><b class="${tot&&tot-com<0?'over':''}">${gbp(tot-com)}</b><span>left to commit</span></div></div>
     <div class="stats"><div class="stat"><b>${gbp(paid)}</b><span>paid</span></div>
     <div class="stat"><b>${gbp(due)}</b><span>still to pay</span></div>
-    <div class="stat"><b class="${over ? "over" : ""}">${gbp(over)}</b><span>overdue</span></div></div>
+    <div class="stat"><b class="${over?'over':''}">${gbp(over)}</b><span>overdue</span></div></div>
     <div class="card"><table><tr><th>Category</th><th>Est.</th><th>Paid</th><th>To pay</th></tr>${rows}
     <tr><td><b>Total</b></td><td><b>${gbp(est)}</b></td><td><b>${gbp(paid)}</b></td><td><b>${gbp(due)}</b></td></tr></table></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-setbudget>Set total budget</button><button class="btn" data-cats>Manage categories</button><button class="btn" data-rem>Reminder defaults</button></div>
     <div class="sec">To pay</div>${toPay || none}<div class="sec">Paid</div>${done || none}`;
-      }
+}
 
-      function expModal(x) {
-        const n = !x;
-        x = x || {};
-        modal(
-          n ? "New cost" : "Edit cost",
-          [
-            { k: "desc", label: "What is it for", val: x.desc },
-            { k: "amount", label: "Amount (£)", type: "number", val: x.amount },
-            {
-              k: "status",
-              label: "Status",
-              type: "select",
-              val: x.status || (n ? "due" : "paid"),
-              opts: [
-                ["due", "To pay"],
-                ["paid", "Paid"],
-              ],
-            },
-            {
-              k: "due",
-              label: "Due date",
-              type: "date",
-              val: x.due || (isPaid(x) ? "" : x.date),
-            },
-            {
-              k: "paidOn",
-              label: "Paid on (if paid)",
-              type: "date",
-              val: x.paidOn || (x.status ? "" : x.date),
-            },
-            {
-              k: "taskId",
-              label: "Linked task (optional)",
-              type: "select",
-              val: x.taskId || "",
-              opts: [["", "None"], ...st.tasks.map((t) => [t.id, t.title])],
-            },
-            {
-              k: "cat",
-              label: "Category",
-              type: "select",
-              val: x.cat || "",
-              opts: [
-                ["", "Same as linked task"],
-                ...st.cats.map((c) => [c.id, c.name]),
-              ],
-            },
-          ],
-          (o) => {
-            if (!o.desc.trim()) return;
-            const tk = st.tasks.find((t) => t.id === o.taskId);
-            save("expenses", x.id, {
-              ...x,
-              ...o,
-              desc: o.desc.trim(),
-              amount: parseFloat(o.amount) || 0,
-              paidOn: o.status === "paid" ? o.paidOn || today() : "",
-              cat: o.cat || (tk && tk.cat) || "",
-            });
-          },
-          n ? null : () => remove("expenses", x.id),
-        );
-      }
+function expModal(x){
+  const n = !x; x = x || {};
+  modal(n?'New cost':'Edit cost', [
+    {k:'desc',label:'What is it for',val:x.desc},
+    {k:'amount',label:'Amount (£)',type:'number',val:x.amount},
+    {k:'status',label:'Status',type:'select',val:x.status || (n?'due':'paid'),opts:[['due','To pay'],['paid','Paid']]},
+    {k:'due',label:'Due date',type:'date',val:x.due || (isPaid(x)?'':x.date)},
+    {k:'paidOn',label:'Paid on (if paid)',type:'date',val:x.paidOn || (x.status ? '' : x.date)},
+    {k:'taskId',label:'Linked task (optional)',type:'select',val:x.taskId||'',opts:[['','None'],...st.tasks.map(t=>[t.id,t.title])]},
+    {k:'cat',label:'Category',type:'select',val:x.cat||'',opts:[['','Same as linked task'],...st.cats.map(c=>[c.id,c.name])]}
+  ], o => { if(!o.desc.trim()) return; const tk = st.tasks.find(t=>t.id===o.taskId);
+    save('expenses', x.id, {...x, ...o, desc:o.desc.trim(), amount:parseFloat(o.amount)||0, paidOn:o.status==='paid' ? (o.paidOn || today()) : '', cat:o.cat || (tk && tk.cat) || ''}); },
+  n ? null : () => remove('expenses', x.id));
+}
 
-      function modal(title, fields, onSave, onDel) {
-        const f = fields
-          .map((x) => {
-            const v = x.val ?? "";
-            const inp =
-              x.type === "select"
-                ? `<select data-k="${x.k}">${x.opts.map(([a, b]) => `<option value="${esc(a)}" ${a === v ? "selected" : ""}>${esc(b)}</option>`).join("")}</select>`
-                : x.type === "textarea"
-                  ? `<textarea rows="3" data-k="${x.k}">${esc(v)}</textarea>`
-                  : `<input data-k="${x.k}" type="${x.type || "text"}" ${x.type === "number" ? 'step="0.01" inputmode="decimal"' : ""} value="${esc(v)}">`;
-            return `<label>${esc(x.label)}</label>${inp}`;
-          })
-          .join("");
-        $("#sheet").innerHTML =
-          `<h1>${esc(title)}</h1>${f}<div class="acts"><button class="btn p" id="ok">Save</button>${onDel ? '<button class="btn d" id="del">Delete</button>' : ""}<button class="btn" id="cancel">Cancel</button></div>`;
-        $("#modal").classList.add("show");
-        $("#cancel").onclick = close;
-        $("#ok").onclick = () => {
-          const o = {};
-          $("#sheet")
-            .querySelectorAll("[data-k]")
-            .forEach((e) => (o[e.dataset.k] = e.value));
-          onSave(o);
-          close();
-        };
-        if (onDel)
-          $("#del").onclick = () => {
-            if (confirm("Delete this?")) {
-              onDel();
-              close();
-            }
-          };
-      }
-      let catOpen = false;
-      const close = () => {
-        catOpen = false;
-        $("#modal").classList.remove("show");
-      };
+function modal(title, fields, onSave, onDel){
+  const f = fields.map(x => {
+    const v = x.val ?? '';
+    const inp = x.type==='select' ? `<select data-k="${x.k}">${x.opts.map(([a,b])=>`<option value="${esc(a)}" ${a===v?'selected':''}>${esc(b)}</option>`).join('')}</select>`
+      : x.type==='textarea' ? `<textarea rows="3" data-k="${x.k}">${esc(v)}</textarea>`
+      : `<input data-k="${x.k}" type="${x.type||'text'}" ${x.type==='number'?'step="0.01" inputmode="decimal"':''} value="${esc(v)}">`;
+    return `<label>${esc(x.label)}</label>${inp}`;
+  }).join('');
+  $('#sheet').innerHTML = `<h1>${esc(title)}</h1>${f}<div class="acts"><button class="btn p" id="ok">Save</button>${onDel?'<button class="btn d" id="del">Delete</button>':''}<button class="btn" id="cancel">Cancel</button></div>`;
+  $('#modal').classList.add('show');
+  $('#cancel').onclick = close;
+  $('#ok').onclick = () => { const o={}; $('#sheet').querySelectorAll('[data-k]').forEach(e=>o[e.dataset.k]=e.value); onSave(o); close(); };
+  if(onDel) $('#del').onclick = () => { if(confirm('Delete this?')){ onDel(); close(); } };
+}
+let catOpen = false;
+const close = () => { catOpen = false; $('#modal').classList.remove('show'); };
 
-      function taskModal(t) {
-        const n = !t;
-        t = t || {};
-        modal(
-          n ? "New task" : "Edit task",
-          [
-            { k: "title", label: "Task", val: t.title },
-            {
-              k: "cat",
-              label: "Category",
-              type: "select",
-              val: t.cat || "",
-              opts: [
-                ["", "Uncategorised"],
-                ...st.cats.map((c) => [c.id, c.name]),
-              ],
-            },
-            { k: "due", label: "Due date", type: "date", val: t.due },
-            {
-              k: "est",
-              label: "Estimated cost (£)",
-              type: "number",
-              val: t.est,
-            },
-            { k: "notes", label: "Notes", type: "textarea", val: t.notes },
-            {
-              k: "rdays",
-              label: "Reminder",
-              type: "select",
-              val: String(t.rdays ?? ""),
-              opts: [
-                ["", "Use default"],
-                ["0", "On the day"],
-                ["1", "1 day before"],
-                ["2", "2 days before"],
-                ["7", "1 week before"],
-                ["14", "2 weeks before"],
-              ],
-            },
-            {
-              k: "rtime",
-              label: "Reminder time (blank = default)",
-              type: "time",
-              val: t.rtime,
-            },
-            {
-              k: "rcustom",
-              label: "Or a custom date and time (overrides the above)",
-              type: "datetime-local",
-              val: t.rcustom,
-            },
-          ],
-          (o) => {
-            if (!o.title.trim()) return;
-            save("tasks", t.id, {
-              ...t,
-              ...o,
-              title: o.title.trim(),
-              est: parseFloat(o.est) || 0,
-              done: !!t.done,
-            });
-          },
-          n ? null : () => remove("tasks", t.id),
-        );
-      }
-      function guestModal(g) {
-        const n = !g;
-        g = g || {};
-        modal(
-          n ? "New guest" : "Edit guest",
-          [
-            { k: "name", label: "Name", val: g.name },
-            {
-              k: "size",
-              label: "Number in party (including them)",
-              type: "number",
-              val: g.size || 1,
-            },
-            {
-              k: "rsvp",
-              label: "RSVP",
-              type: "select",
-              val: g.rsvp || "pending",
-              opts: [
-                ["pending", "Pending"],
-                ["yes", "Attending"],
-                ["no", "Declined"],
-              ],
-            },
-            {
-              k: "notes",
-              label: "Notes (diet, table, etc.)",
-              type: "textarea",
-              val: g.notes,
-            },
-          ],
-          (o) => {
-            if (!o.name.trim()) return;
-            save("guests", g.id, {
-              ...g,
-              ...o,
-              name: o.name.trim(),
-              size: Math.max(1, parseInt(o.size) || 1),
-            });
-          },
-          n ? null : () => remove("guests", g.id),
-        );
-      }
-      function remModal() {
-        modal(
-          "Reminder defaults",
-          [
-            {
-              k: "rdays",
-              label: "Remind me",
-              type: "select",
-              val: String(st.cfg.rdays ?? "1"),
-              opts: [
-                ["0", "On the day"],
-                ["1", "1 day before"],
-                ["2", "2 days before"],
-                ["7", "1 week before"],
-                ["14", "2 weeks before"],
-              ],
-            },
-            {
-              k: "rtime",
-              label: "At",
-              type: "time",
-              val: st.cfg.rtime || "09:00",
-            },
-          ],
-          (o) =>
-            save("settings", "main", {
-              ...st.cfg,
-              rdays: o.rdays,
-              rtime: o.rtime || "09:00",
-            }),
-        );
-      }
-      function catModal() {
-        const draw = () => {
-          $("#sheet").innerHTML =
-            `<h1>Categories</h1>` +
-            st.cats
-              .map(
-                (c) =>
-                  `<div class="row"><input data-cr="${esc(c.id)}" value="${esc(c.name)}"><button class="btn d" data-cd="${esc(c.id)}">✕</button></div>`,
-              )
-              .join("") +
-            `<label>New category</label><input id="newcat" placeholder="e.g. Honeymoon"><div class="acts"><button class="btn p" id="addcat">Add</button><button class="btn" id="cancel">Done</button></div>`;
-          $("#cancel").onclick = close;
-          $("#addcat").onclick = () => {
-            const v = $("#newcat").value.trim();
-            if (v) save("categories", null, { name: v });
-          };
-        };
-        catOpen = true;
-        draw();
-        $("#modal").classList.add("show");
-        $("#sheet").onchange = (e) => {
-          const id = e.target.dataset.cr;
-          if (id && e.target.value.trim())
-            save("categories", id, { name: e.target.value.trim() });
-        };
-        $("#sheet").onclick = (e) => {
-          const id = e.target.dataset.cd;
-          if (
-            id &&
-            confirm("Delete this category? Its tasks become uncategorised.")
-          )
-            remove("categories", id);
-        };
-        catModal.redraw = draw;
-      }
+function taskModal(t){
+  const n = !t; t = t || {};
+  modal(n?'New task':'Edit task', [
+    {k:'title',label:'Task',val:t.title},
+    {k:'cat',label:'Category',type:'select',val:t.cat||'',opts:[['','Uncategorised'],...st.cats.map(c=>[c.id,c.name])]},
+    {k:'due',label:'Due date',type:'date',val:t.due},
+    {k:'est',label:'Estimated cost (£)',type:'number',val:t.est},
+    {k:'notes',label:'Notes',type:'textarea',val:t.notes},
+    {k:'rdays',label:'Reminder',type:'select',val:String(t.rdays ?? ''),opts:[['','Use default'],['0','On the day'],['1','1 day before'],['2','2 days before'],['7','1 week before'],['14','2 weeks before']]},
+    {k:'rtime',label:'Reminder time (blank = default)',type:'time',val:t.rtime},
+    {k:'rcustom',label:'Or a custom date and time (overrides the above)',type:'datetime-local',val:t.rcustom}
+  ], o => { if(!o.title.trim()) return; save('tasks', t.id, {...t, ...o, title:o.title.trim(), est:parseFloat(o.est)||0, done:!!t.done, ...(n ? {order:Date.now()} : {})}); },
+  n ? null : () => remove('tasks', t.id));
+}
+function guestModal(g){
+  const n = !g; g = g || {};
+  modal(n?'New guest':'Edit guest', [
+    {k:'name',label:'Name',val:g.name},
+    {k:'size',label:'Number in party (including them)',type:'number',val:g.size||1},
+    {k:'invite',label:'Invited to',type:'select',val:g.invite||'day',opts:[['day','Day and evening'],['evening','Evening only']]},
+    {k:'rsvp',label:'RSVP',type:'select',val:g.rsvp||'pending',opts:[['pending','Pending'],['yes','Attending'],['no','Declined']]},
+    {k:'notes',label:'Notes (diet, table, etc.)',type:'textarea',val:g.notes}
+  ], o => { if(!o.name.trim()) return; save('guests', g.id, {...g, ...o, name:o.name.trim(), size:Math.max(1,parseInt(o.size)||1)}); },
+  n ? null : () => remove('guests', g.id));
+}
+function remModal(){
+  modal('Reminder defaults', [
+    {k:'rdays',label:'Remind me',type:'select',val:String(st.cfg.rdays ?? '1'),opts:[['0','On the day'],['1','1 day before'],['2','2 days before'],['7','1 week before'],['14','2 weeks before']]},
+    {k:'rtime',label:'At',type:'time',val:st.cfg.rtime || '09:00'}
+  ], o => save('settings','main',{...st.cfg, rdays:o.rdays, rtime:o.rtime || '09:00'}));
+}
+function catModal(){
+  const draw = () => {
+    $('#sheet').innerHTML = `<h1>Categories</h1>` + st.cats.map(c => `<div class="row"><input data-cr="${esc(c.id)}" value="${esc(c.name)}"><button class="btn d" data-cd="${esc(c.id)}">✕</button></div>`).join('')
+      + `<label>New category</label><input id="newcat" placeholder="e.g. Honeymoon"><div class="acts"><button class="btn p" id="addcat">Add</button><button class="btn" id="cancel">Done</button></div>`;
+    $('#cancel').onclick = close;
+    $('#addcat').onclick = () => { const v=$('#newcat').value.trim(); if(v) save('categories', null, {name:v}); };
+  };
+  catOpen = true; draw(); $('#modal').classList.add('show');
+  $('#sheet').onchange = e => { const id=e.target.dataset.cr; if(id && e.target.value.trim()) save('categories', id, {name:e.target.value.trim()}); };
+  $('#sheet').onclick = e => { const id=e.target.dataset.cd; if(id && confirm('Delete this category? Its tasks become uncategorised.')) remove('categories', id); };
+  catModal.redraw = draw;
+}
 
-      document.addEventListener("click", (e) => {
-        const t = e.target;
-        if (t.id === "modal") {
-          close();
-          return;
-        }
-        if (t.dataset.tab) {
-          tab = t.dataset.tab;
-          render();
-          return;
-        }
-        if (t.dataset.rem !== undefined) {
-          remModal();
-          return;
-        }
-        if (t.closest("a.bell")) return;
-        if (t.dataset.paid) {
-          const x = st.exps.find((y) => y.id === t.dataset.paid);
-          if (x) {
-            const { id, ...rest } = x;
-            save("expenses", id, { ...rest, status: "paid", paidOn: today() });
-          }
-          return;
-        }
-        if (t.dataset.cats !== undefined) {
-          catModal();
-          return;
-        }
-        if (t.dataset.filter) {
-          filter = t.dataset.filter;
-          render();
-          return;
-        }
-        if (t.dataset.hide !== undefined) {
-          e.preventDefault();
-          hideDone = !hideDone;
-          render();
-          return;
-        }
-        if (t.dataset.toggle) {
-          const k = st.tasks.find((x) => x.id === t.dataset.toggle);
-          if (k) {
-            const { id, ...rest } = k;
-            save("tasks", id, { ...rest, done: t.checked });
-          }
-          return;
-        }
-        if (t.dataset.setbudget !== undefined) {
-          const v = prompt("Total wedding budget (£)", st.cfg.budget || "");
-          if (v !== null)
-            save("settings", "main", { ...st.cfg, budget: parseFloat(v) || 0 });
-          return;
-        }
-        if (t.dataset.rsvp) return;
-        const r = t.closest("[data-edit]");
-        if (r) {
-          taskModal(st.tasks.find((x) => x.id === r.dataset.edit));
-          return;
-        }
-        const xe = t.closest("[data-xedit]");
-        if (xe) {
-          expModal(st.exps.find((x) => x.id === xe.dataset.xedit));
-          return;
-        }
-        const g = t.closest("[data-gedit]");
-        if (g) {
-          guestModal(st.guests.find((x) => x.id === g.dataset.gedit));
-          return;
-        }
-      });
-      document.addEventListener("change", (e) => {
-        const id = e.target.dataset.rsvp;
-        if (id) {
-          const g = st.guests.find((x) => x.id === id);
-          if (g) {
-            const { id: _, ...rest } = g;
-            save("guests", id, { ...rest, rsvp: e.target.value });
-          }
-        }
-      });
-      $("#fab").onclick = () =>
-        tab === "tasks"
-          ? taskModal()
-          : tab === "guests"
-            ? guestModal()
-            : expModal();
-      render();
-      window.addEventListener("load", connect);
-    </script>
-  </body>
+document.addEventListener('click', e => {
+  const t = e.target;
+  if(t.id === 'modal'){ close(); return; }
+  if(t.dataset.tab){ tab = t.dataset.tab; render(); return; }
+  if(t.dataset.rem !== undefined){ remModal(); return; }
+  if(t.closest('a.bell') || t.closest('.grip')) return;
+  if(t.dataset.gfilter){ gfilter = t.dataset.gfilter; render(); return; }
+  if(t.dataset.sortdate !== undefined){ e.preventDefault(); if(confirm('Reorder all open tasks by due date?')){ st.tasks.filter(x=>!x.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999') || byOrder(a,b)).forEach((x,i)=>{ const {id,...rest}=x; save('tasks', id, {...rest, order:(i+1)*1000}); }); } return; }
+  if(t.dataset.paid){ const x = st.exps.find(y=>y.id===t.dataset.paid); if(x){ const {id,...rest}=x; save('expenses', id, {...rest, status:'paid', paidOn:today()}); } return; }
+  if(t.dataset.cats !== undefined){ catModal(); return; }
+  if(t.dataset.filter){ filter = t.dataset.filter; render(); return; }
+  if(t.dataset.hide !== undefined){ e.preventDefault(); hideDone = !hideDone; render(); return; }
+  if(t.dataset.toggle){ const k = st.tasks.find(x=>x.id===t.dataset.toggle); if(k){ const {id,...rest}=k; save('tasks', id, {...rest, done:t.checked}); } return; }
+  if(t.dataset.setbudget !== undefined){ const v = prompt('Total wedding budget (£)', st.cfg.budget||''); if(v!==null) save('settings','main',{...st.cfg, budget:parseFloat(v)||0}); return; }
+  if(t.dataset.rsvp) return;
+  const r = t.closest('[data-edit]'); if(r){ taskModal(st.tasks.find(x=>x.id===r.dataset.edit)); return; }
+  const xe = t.closest('[data-xedit]'); if(xe){ expModal(st.exps.find(x=>x.id===xe.dataset.xedit)); return; }
+  const g = t.closest('[data-gedit]'); if(g){ guestModal(st.guests.find(x=>x.id===g.dataset.gedit)); return; }
+});
+document.addEventListener('change', e => {
+  const id = e.target.dataset.rsvp;
+  if(id){ const g = st.guests.find(x=>x.id===id); if(g){ const {id:_,...rest}=g; save('guests', id, {...rest, rsvp:e.target.value}); } }
+});
+document.addEventListener('pointerdown', e => {
+  const g = e.target.closest && e.target.closest('.grip'); if(!g) return;
+  const row = g.closest('.row'), list = $('#olist'); if(!row || !list) return;
+  e.preventDefault();
+  try{ document.documentElement.setPointerCapture(e.pointerId); }catch(_){}
+  row.classList.add('drag');
+  drag = {row, list, pid:e.pointerId, before:[...list.children].map(r => r.dataset.edit).join()};
+});
+document.addEventListener('pointermove', e => {
+  if(!drag) return;
+  const {row, list} = drag;
+  const after = [...list.children].filter(r => r !== row).find(r => { const b = r.getBoundingClientRect(); return e.clientY < b.top + b.height/2; });
+  if(after){ if(row.nextElementSibling !== after) list.insertBefore(row, after); }
+  else if(list.lastElementChild !== row) list.appendChild(row);
+  if(e.clientY < 80) window.scrollBy(0,-10); else if(e.clientY > window.innerHeight - 80) window.scrollBy(0,10);
+});
+function endDrag(){
+  if(!drag) return;
+  const {row, list, pid, before} = drag, ids = [...list.children].map(r => r.dataset.edit);
+  row.classList.remove('drag'); drag = null;
+  try{ document.documentElement.releasePointerCapture(pid); }catch(_){}
+  if(ids.join() !== before) commitOrder(ids);
+  if(pendingRender){ pendingRender = false; render(); }
+}
+document.addEventListener('pointerup', endDrag);
+document.addEventListener('pointercancel', endDrag);
+$('#fab').onclick = () => tab==='tasks' ? taskModal() : tab==='guests' ? guestModal() : expModal();
+render();
+window.addEventListener('load', connect);
+</script>
+</body>
 </html>
